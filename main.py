@@ -28,7 +28,7 @@ RIGHT_MOUSE = 3
 POD_WIDTH = 32
 POD_HEIGHT = 145
 POD_OFFSET = 32  # How many pixels is between the side and the pod
-BALL_WIDTH = BALL_HEIGHT = 64
+BALL_WIDTH = BALL_HEIGHT = 16
 SCORE_WIDTH = 256
 SCORE_HEIGHT = 256
 
@@ -37,8 +37,8 @@ class Pong(object):
     def __init__(self):
         # Screen settings
         display = pygame.display.Info()
-        self.screen_width = int(display.current_w/2)  # display.current_w
-        self.screen_height = int(display.current_h/2)  # display.current_h
+        self.screen_width = int(display.current_w / 2)
+        self.screen_height = int(display.current_h / 2)
 
         # screen = pygame.display.set_mode([screen_width,screen_height], pygame.FULLSCREEN, 32)
         self.screen = pygame.display.set_mode([self.screen_width, self.screen_height])
@@ -92,7 +92,7 @@ class Pong(object):
         self.score_player1 = Score(self.state['player1']['score'], DARK_GREY, self.screen, score_player1_position, width=SCORE_WIDTH, heigth=SCORE_HEIGHT)
         self.score_player2 = Score(self.state['player2']['score'], DARK_GREY, self.screen, score_player2_position, width=SCORE_WIDTH, heigth=SCORE_HEIGHT)
         self.frame = Frame(WHITE, self.screen, (0, 0), self.screen_width, self.screen_height, border=1)
-        self.ball = Ball([3, 3], 'seznam_icon.png', self.screen, width=BALL_WIDTH, height=BALL_HEIGHT)
+        self.ball = Ball([5, 5], 'seznam_icon.png', self.screen, width=BALL_WIDTH, height=BALL_HEIGHT)
         pygame.display.flip()
 
     def generate_random_color(self):

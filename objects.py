@@ -154,6 +154,38 @@ class Ball(SpriteObject):
         position = (int(screen.get_width() / 2) - int(width / 2), random.randint(0, screen.get_height()) - int(height / 2))  # Place the ball somewhere in the middle
         super(Ball, self).__init__(image_path, screen, position, width, height)
 
+    def change_direction(self, ball_rect, collision_object):
+        """
+        Which part of the collision object was hit by the center of the 'side'
+        of the ball.
+        """
+        print('Changing angle')
+        index_velocity_change = {1: 3, 2: 2, 3: 1, 4: 2, 5: 3}
+        ball_center = (ball_rect.top + int(ball_rect.height / 2))  # Center of the "side" on the Y axis of the ball. Height and width are always the same
+        print('Ball center Y: {}, Paddle top Y: {}'.format(ball_center, collision_object.sprite.rect.top))
+
+        # Split the collision object on the Y axis into N parts to be able to
+        # change the angle of bounce in the different parts of the paddle.
+        def chunks(l, n):
+            result = []
+            for i in range(0, len(l), n):
+                # Last chunk has to contain the rest of the items
+                if len(result) == (n - 1):
+                    result.append(l[i:])
+                    break
+                else:
+                    result.append(l[i:i + n])
+            return result
+
+        paddle_parts = chunks(range(collision_object.sprite.rect.top, (collision_object.sprite.rect.top + collision_object.sprite.rect.height)),
+                              len(index_velocity_change))
+        print('Paddle parts: {}'.format(', '.join(['({},{})'.format(min(x), max(x)) for x in paddle_parts])))
+        for index, paddle_part in enumerate(paddle_parts, start=1):
+            if ball_center in paddle_part:
+                print('Found hit in part {}, velocity {}'.format(index, index_velocity_change[index]))
+                return index_velocity_change[index]
+        return index_velocity_change[3]  # If no collision is found on the front/back side of the paddle, no special change of direction.
+
     def move_ball(self, collision_objects):
         """
         I want it to move by itself in different manner.
@@ -162,26 +194,6 @@ class Ball(SpriteObject):
         position from given velocity and current position. The ball should bounce
         within the screen.
         """
-
-        # DEBUG
-        # pygame.sprite.collide_mask(SpriteLeft, SpriteRight)
-        # ball_rect = self.sprite.rect
-        # # In most cases, the ball will hit the pod with its left or right side,
-        # # so I can make some kind of optimization by not creating other 2 rects
-        # # too soon :)
-        #
-        # left_rect = pygame.Rect(ball_rect.left - 1, ball_rect.top - 1, 1, ball_rect.height)
-        # right_rect = pygame.Rect((ball_rect.left + ball_rect.width) - 1, ball_rect.top - 1, 1, ball_rect.height)
-        # top_rect = pygame.Rect(ball_rect.left - 1, ball_rect.top - 1, ball_rect.width, 1)
-        # bottom_rect = pygame.Rect(ball_rect.left - 1, (ball_rect.top + ball_rect.height) - 1, ball_rect.width, 1)
-        # # pygame.draw.rect(self.screen, (0, 0, 255), self.sprite.rect, 1)
-        # # pygame.draw.rect(self.screen, (255, 0, 0), topleft, 1)
-        # pygame.draw.rect(self.screen, self.color, left_rect, 1)
-        # pygame.draw.rect(self.screen, self.color, right_rect, 1)
-        # pygame.draw.rect(self.screen, self.color, top_rect, 1)
-        # pygame.draw.rect(self.screen, self.color, bottom_rect, 1)
-        # /DEBUG
-
         # Compute the movement
 
         # Did it hit the player's pods?
@@ -203,17 +215,21 @@ class Ball(SpriteObject):
             left_rect = pygame.Rect(ball_rect.left - 1, ball_rect.top - 1, 1, ball_rect.height)
             if left_rect.colliderect(collision_object.sprite.rect):
                 self.velocity[0] = -self.velocity[0]
+                # self.velocity[1] = self.change_direction(left_rect, collision_object) * self.velocity[1]
                 break
             right_rect = pygame.Rect((ball_rect.left + ball_rect.width) - 1, ball_rect.top - 1, 1, ball_rect.height)
             if right_rect.colliderect(collision_object.sprite.rect):
                 self.velocity[0] = -self.velocity[0]
+                # self.velocity[1] = self.change_direction(left_rect, collision_object) * self.velocity[1]
                 break
             top_rect = pygame.Rect(ball_rect.left - 1, ball_rect.top - 1, ball_rect.width, 1)
             if top_rect.colliderect(collision_object.sprite.rect):
+                # self.velocity[0] = -self.velocity[0]
                 self.velocity[1] = -self.velocity[1]
                 break
             bottom_rect = pygame.Rect(ball_rect.left - 1, (ball_rect.top + ball_rect.height) - 1, ball_rect.width, 1)
             if bottom_rect.colliderect(collision_object.sprite.rect):
+                # self.velocity[0] = -self.velocity[0]
                 self.velocity[1] = -self.velocity[1]
                 break
 
